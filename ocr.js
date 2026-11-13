@@ -1,5 +1,3 @@
-import { text } from "express"
-
 //Clase para manejo de errores
 export class OcrError extends Error{
   constructor(message, status = 500){
@@ -18,7 +16,7 @@ const config = () => ({
   endpoint: process.env.DI_ENDPOINT,
   key: process.env.DI_KEY,
   apiVersion: process.env.DI_API_VERSION || "2024-11-30",
-  model: process.env.DI_MODEL || "prebuild-read"
+  model: process.env.DI_MODEL || "prebuilt-read"
 })
 
 //Manejador de errores - clasificación code HTTP
@@ -48,13 +46,13 @@ async function fallo(res, contexto) {
 }
 
 //No es necesario guardar el PDF de manera fisica (buffer = memoria)
-async function leerPDF(buffer) {
+export async function leerPDF(buffer) {
   //Necesitamos los parámetros de conexión -> config()
   //Deserializar...
   const { endpoint, key, apiVersion, model } = config()  
 
   //1. Enviar el PDF
-  const url = `${endpoint}/documentintelligence/documentModels/${model}:analize?api-version=${apiVersion}`
+  const url = `${endpoint}/documentintelligence/documentModels/${model}:analyze?api-version=${apiVersion}`
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -107,7 +105,7 @@ function formatear(analisis){
   //Obtener el número de páginas + texto
   const paginas = (analisis.pages ?? []).map((p) => ({
     numero: p.pageNumber ,
-    lineas: (p.lineas ?? []).map((l) => l.content)
+    lineas: (p.lines?? []).map((l) => l.content)
   }));
 
   //Retornar como JSON
